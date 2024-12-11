@@ -171,7 +171,7 @@ class Preprocessor:
         self.property_type = list(data_postcodes['Subtype of property'].unique())
         self.building_state = list(data_postcodes['State of the building'].unique())
         self.num_facades = list(data_postcodes['Number of facades'].sort_values().unique().astype('int32'))
-        self.num_rooms = list(data_postcodes['Number of rooms'].sort_values().unique().astype('int32'))
+        self.num_rooms = list(range(data_postcodes['Number of rooms'].max() + 1))
 
     def preprocess(self, new_data:dict) -> np.ndarray:
         """
@@ -183,7 +183,7 @@ class Preprocessor:
         # obtain the tax information for given postal code ; drop postal code
 
         self.new_data['PostalCodes'] = self.new_data['PostalCodes'].astype('str')
-        self.new_data['Mean_income_tax_unit'] = self.taxdata[self.taxdata['PostalCodes'] == self.new_data['PostalCodes'][0]]['Mean_income_taxunit']
+        self.new_data['Mean_income_taxunit'] = self.taxdata[self.taxdata['PostalCodes'] == self.new_data['PostalCodes'][0]]['Mean_income_taxunit'].values
         self.new_data.drop(columns= ['PostalCodes'], inplace= True)
 
         # Ensure datatypes
@@ -221,5 +221,5 @@ class Preprocessor:
         # Calculate Gower distance and retrieve distances for the new datapoint
 
         gower_mat = gower_matrix(data_to_dist)
-        return gower_mat[-1]
+        return gower_mat[-1, :-1].reshape(1, -1)
 
