@@ -33,5 +33,5 @@ class Predictor:
 
         # Make prediction
 
-        self.pred_price = self.model.predict(self.data)[0][0]
+        self.pred_price = self.model.predict(self.data)[0][0].round(2)
         return self.pred_price
