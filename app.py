@@ -35,9 +35,15 @@ if st.button('Predict price'):
 
         clean_distances = preprocessing.preprocess(new_data= new_data)
 
-        predictor = Predictor(data= clean_distances)
+        predictor = Predictor(data=clean_distances)
         predicted_price = predictor.predict()
+        CI_lower, CI_upper = predictor.confidence_bootstrap(X_dist= preprocessing.X_distance, 
+                                                            y= preprocessing.y_train,
+                                                            new_data_dist= preprocessing.distance)
     st.success(f"The predicted property price is {predicted_price}€")
+    st.warning(f"The 95% Confidence Interval for this price estimation is: ({CI_lower} - {CI_upper})")
+        
+
 
 
 

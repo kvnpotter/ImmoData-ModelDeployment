@@ -24,7 +24,10 @@ class Preprocessor:
         : param new_data: list: Data from user input stored in dict.
         """
         self.data = None
+        self.data_y = None
+        self.y_train = None
         self.new_data = None
+        self.X_distance = None
         self.distance = None
         self.postalcodes = None
         self.taxdata = None
@@ -163,7 +166,7 @@ class Preprocessor:
         "Living Area",
         "Number of facades",
     ]]
-
+        self.data_y = subset_price_datapostcodes['Price']
         self.data = subset_columns_datapostcodes
 
         # Set lists for selectors
@@ -213,6 +216,7 @@ class Preprocessor:
 
         self.training_indices = pickle.load(open('./preprocessing/training_indices.pkl', 'rb'))
         selected_rows = self.data.iloc[self.training_indices]
+        self.y_train = self.data_y.iloc[self.training_indices]
 
         # Add row of new data to dataframe
 
@@ -221,5 +225,6 @@ class Preprocessor:
         # Calculate Gower distance and retrieve distances for the new datapoint
 
         gower_mat = gower_matrix(data_to_dist)
+        self.X_distance = gower_mat[:-1, :-1]
         return gower_mat[-1, :-1].reshape(1, -1)
 
