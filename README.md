@@ -35,7 +35,7 @@ The retained features for price prediction are:
 
 The model itself was constructed using following parameters obtained using 5-fold cross-validation grid-search, with RMSE as optimization metric:
 - **Distance metric** : Gower distance
-- **n neighbours** : 17
+- **n neighbours** : 19
 - **weights** : inverse distance
 
 **Caveat** : After fitting the model, substantial overfitting was detected (using $R^2$, MAE, RMSE, MAPE). This is clearly visible in the graph depicting actual and predicted price values, ordered by price. The best method found for dealing with the issue, given the dataset, was to restrict the price range, thereby excluding extreme values. The retained range is 200,000€ to 600,000€. **As a result, the model (and the app) should not be used to predict property prices lying (far) outside this range.** In addition, examination of the graph also indicates a systematic bias, where prices under the mean value are often overestimated, and prices over the mean are most often underestimated. This is taken to be a limitation of KNN regression, where averaging prices over 17 neighbours to make predictions results in values more close to the mean price.
