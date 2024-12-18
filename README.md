@@ -41,43 +41,34 @@ The model itself was constructed using following parameters obtained using 5-fol
 **Caveat** : After fitting the model, substantial overfitting was detected (using $R^2$, MAE, RMSE, MAPE). This is clearly visible in the graph depicting actual and predicted price values, ordered by price. The best method found for dealing with the issue, given the dataset, was to restrict the price range, thereby excluding extreme values. The retained range is 200,000€ to 600,000€. **As a result, the model (and the app) should not be used to predict property prices lying (far) outside this range.** In addition, examination of the graph also indicates a systematic bias, where prices under the mean value are often overestimated, and prices over the mean are most often underestimated. This is taken to be a limitation of KNN regression, where averaging prices over 17 neighbours to make predictions results in values more close to the mean price.
 
 
+
 ![Price vs. rank ; training dataset ; actual value and predicted](./graphs/resid_train.png)
 Graph 1: Actual (black dot ; training dataset) and predicted (green line ; training dataset) prices, ordered by increasing actual price. The x axis represents the observation rank. The sigmoid form of the curve indicates few extreme values at the low and high price values. Predictions closely follow these extreme values, indicating overfitting. A systematic bias, where prices under the mean value are often overestimated, and prices over the mean are most often underestimated is visible
 
 ### Streamlit app code and data flow
 
-## Modelling real estate data
+The following text describes working of the Streamlit app and code.
 
-Modelling occurs by instantiating a Modeller object. Methods available for this class allow to model the data using KNN regression and a combination of following parameters:
-- n_neighbors : varying number of nearest neighbors to take into account
-- metric : which distance metric to use for NN calculation (Euclidean, cosine or Gower)
-- weights : which weighting to attribute to neighbors (uniform, inverste distance)
+Upon launching/resetting the app, a `Preprocessor()` object is created, allowing to prepare the data. Calling `load_data()` method on this object performs following actions:
+- loading the original, scraped and cleaned, dataset
+- loading additional tax data
+- preparing and cleaning data for distance calculation (verifying data types, subsetting price range, subsetting features)
+- creating lists for the dropdown inputs used in the app for property type, building state, number of rooms and facades and postcodes
+- creating a lookup table for mean taxable income according to the postal code
 
-Methods available for Modeller objects allow setting model parameters (including adding cross-validation grid search or not), getting the model (a method permitting to send the data to the appropriate model, with or without CV gridsearch, based on selected parameters).
+Some information is presented to the user (title and warning pertaining to the price range). A sidebar contains dropdown elements or fields to input values used for price prediction.
 
-CV gridsearch, using 5 CV folds and based on RMSE scoring was used for hyperparameter tuning.
-Gower distance was included in modelling, despite not being available natively in sklearn, due to the fact that Gower distance is assumed to be better suited to datasets mixing categorical and numerical data.
+Upon clicking the 'Predict price' button, the values are stored in a dictionary which is passed as an argument to the `preprocess()` method of the `Preprocessor()` object. Followng actions occur:
+- obtain taxable income information from the lookup table and drop postal code
+- calculate Gower distance
 
-## Model evaluation
+The calculation of Gower distance is performed by using training datapoint indices obtained from the previous modelling project, including the new datapoint (from user input), calculating a distance matrix and returning only the row of distances from the new datapoint to training datapoints.
 
-For model evaluation, an object of Evaluator class is instantiated, allowing to calculate, and store, model evaluation metrics such as R2, MAE, RMSE, MAPE, etc.
+A `Predictor()` obect is instantiated, passing the distance row as an argument, and loading the pre-trained model from a pickle file, after which the `predict()` method allows property price estimation.
 
-The choice was made to exclude R2 adjusted, in favour of simple R2 since the number of observations in the dataset is much larger than the number of features.
+Additionaly, a 95% confidence interval for the price estimation is generated using bootstrapping (1000 random resamples, with replacement).
 
-## Visualisation
-
-A number of visualiser classes were constructed to group all functionality pertaining to the building of graphs.
-
-## Main
-
-The main script contains all iterations of modelling (8 total) on a combination of parameters (using CV gridsearch) and different combinations of predictors.
-In particular:
-- Using the original postal code data vs. replacing it with tax data
-- Using the original (correlated) predictors at property level vs. observation scores on the first two axes of PCA on these variables
-
-The results of each iteration were automatically recorded in the ./Results-Graphs/model_metrics.csv file
-
-Finally, the script stores the best model (see evalutation_report.md) as a pickle file.
+Finally, the predicted price and associated confidence interval are shown to the user.
 
    ## **Installation-Environment setup**
 
@@ -95,21 +86,18 @@ conda activate <my-env>
 Included in the repository is a cross-platform environment.yml file, allowing to create a copy of the one used for this project. The environment name is given in the first line of the file.
 ```shell
 conda env create -f environment.yml
-conda activate wikipedia_scraper_env
+conda activate ImmoEliza
 conda env list #verify the environment was installed correctly
 ```
 
 ## **Usage**
 
-The repository contains following files and directories
-- Model and Testing jupyter notebooks : Notebooks detailing modelling from loading the data to calculating evaluation metrics (to be completed)
-- main.py : Main script, as described above, performing modelling, recording evaluation metrics and pickling the best model.
-- (environment, license and readme files)
-- test_scripts directory : containing an attempt at writing a function for Gower distance calculation (function from the gower package used in final modelling)
-- Data directory : contains clean property data obtained from EDA project and income/tax data obtained from the belgian government (FOD Financiën/SPF Finances)
-- Results-Graphs directory : contains all outputs from visualisation and table creation methods, including evaluation metrics for 8 models
-- classes : contains separate modules for data preprocessing, modelling, evaluation and visualisation
-- evaluation_report.md : a report evaluating the selected model
+Once cloned, navigate to the repository directory. Using command prompt, with the environment activated, run following command to run the app.
+```shell
+streamlit run app.py
+```
+
+**Reminder** : running this code with a simple clone of this repo will not produce a functional app, since the model.pkl file was omitted due to size constraints.
 
 # Contributors 
 This project was completed by:
