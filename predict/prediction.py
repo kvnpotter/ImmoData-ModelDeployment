@@ -10,10 +10,12 @@ from sklearn.utils import resample
 
 # Code
 
+
 class Predictor:
     """
     Class to handle price prediction
     """
+
     def __init__(self, data: np.ndarray) -> None:
         """
         Create an instance of class Predictor
@@ -21,7 +23,7 @@ class Predictor:
         : param data: np.ndarray: Array of Gower distances of new data point (for which to predict price) to training data points.
         """
         self.data = data
-        self.model = pickle.load(open('./model/best_knn_model_reduced.pkl', 'rb'))
+        self.model = pickle.load(open("./model/best_knn_model_reduced.pkl", "rb"))
         self.pred_price = None
         self.distance_data = None
         self.X_distance = None
@@ -39,7 +41,14 @@ class Predictor:
         self.pred_price = self.model.predict(self.data)[0][0].round(2)
         return self.pred_price
 
-    def confidence_bootstrap(self, X_dist: np.ndarray, y: pd.DataFrame, new_data_dist: np.ndarray, n_bootstraps: int = 100, alpha: float = 0.05) -> tuple[float, float]:
+    def confidence_bootstrap(
+        self,
+        X_dist: np.ndarray,
+        y: pd.DataFrame,
+        new_data_dist: np.ndarray,
+        n_bootstraps: int = 100,
+        alpha: float = 0.05,
+    ) -> tuple[float, float]:
         """
         Calculate confidence interval of price estimation from KNN regressor using bootstrapping.
 
@@ -56,7 +65,9 @@ class Predictor:
         self.y_train = y
         self.distance_data = new_data_dist
         predictions = []
-        knn = KNeighborsRegressor(n_neighbors= 19, metric= 'precomputed', weights= 'distance')
+        knn = KNeighborsRegressor(
+            n_neighbors=19, metric="precomputed", weights="distance"
+        )
 
         for _ in range(n_bootstraps):
             X_boot_gower, new_distance_array, y_resampled = self.resample_distances()
@@ -67,7 +78,7 @@ class Predictor:
         lower = np.percentile(predictions, 100 * alpha / 2).round(2)
         upper = np.percentile(predictions, 100 * (1 - alpha / 2)).round(2)
         return lower, upper
-    
+
     def resample_distances(self) -> np.ndarray:
         """
         Resample distances from an NxN distance matrix, with replacement, returning a random NxN matrix constructed from previous elements while respecting pairwise distances.
@@ -88,9 +99,8 @@ class Predictor:
         distance_column = self.distance_data.reshape(-1, 1)
         new_distance_array = distance_column[resampled_indices]
         new_distance_array = new_distance_array.reshape(1, -1)
-        
+
         # Construct an array of response values relative to new indices
         new_y_array = self.y_train.values[resampled_indices]
-        
-        return new_matrix, new_distance_array, new_y_array          
 
+        return new_matrix, new_distance_array, new_y_array

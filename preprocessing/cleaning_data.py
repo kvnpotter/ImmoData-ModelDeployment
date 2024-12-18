@@ -7,10 +7,12 @@ import pickle
 
 # Code
 
+
 class Preprocessor:
     """
     Class to handle loading data, Gower distance calculation, prepping postal/tax data to allow prediction using the model.
     """
+
     def __init__(self) -> None:
         """
         Create an instance of class Preprocessor.
@@ -28,7 +30,7 @@ class Preprocessor:
         self.property_type = None
         self.building_state = None
         self.num_facades = None
-        self.num_rooms=  None
+        self.num_rooms = None
         self.training_indices = None
 
     def load_data(self) -> None:
@@ -37,7 +39,7 @@ class Preprocessor:
         """
         # Load property data and clean
 
-        data = pd.read_csv('./preprocessing/Clean_data.csv')
+        data = pd.read_csv("./preprocessing/Clean_data.csv")
 
         data.drop(columns=["Unnamed: 0", "id"], inplace=True)
         data["Locality"] = data["Locality"].astype("str")
@@ -51,7 +53,9 @@ class Preprocessor:
         data["Number of facades"] = data["Number of facades"].astype("int64")
 
         # Load INS data and tax data to link
-        data_insee = pd.read_csv("./preprocessing/INSEE_PostCode.csv", encoding="latin-1")
+        data_insee = pd.read_csv(
+            "./preprocessing/INSEE_PostCode.csv", encoding="latin-1"
+        )
         subset_columns = data_insee.columns[6:]
         data_insee["PostalCodes"] = data_insee[subset_columns].apply(
             lambda row: row.dropna().tolist(), axis=1
@@ -75,7 +79,9 @@ class Preprocessor:
 
         # Set postcode - tax data lookup table for input data
 
-        self.taxdata = data_fin_postcode_exploded[['PostalCodes', 'Revenu moyen par déclaration']]
+        self.taxdata = data_fin_postcode_exploded[
+            ["PostalCodes", "Revenu moyen par déclaration"]
+        ]
         self.taxdata.rename(
             columns={"Revenu moyen par déclaration": "Mean_income_taxunit"},
             inplace=True,
@@ -83,7 +89,7 @@ class Preprocessor:
 
         # Get list of available post codes
 
-        self.postalcodes = self.taxdata['PostalCodes'].to_list()
+        self.postalcodes = self.taxdata["PostalCodes"].to_list()
 
         # Continue prepping data for distance calculation
 
@@ -150,27 +156,33 @@ class Preprocessor:
 
         # Subset data to set price range and store in attribute
 
-        subset_price_datapostcodes = data_postcodes[(data_postcodes['Price'] >= 200000) & (data_postcodes['Price'] <= 600000)]
-        subset_columns_datapostcodes = subset_price_datapostcodes[[
-        "Mean_income_taxunit",
-        "Subtype of property",
-        "State of the building",
-        "Surface area of the plot of land",
-        "Number of rooms",
-        "Living Area",
-        "Number of facades",
-    ]]
-        self.data_y = subset_price_datapostcodes['Price']
+        subset_price_datapostcodes = data_postcodes[
+            (data_postcodes["Price"] >= 200000) & (data_postcodes["Price"] <= 600000)
+        ]
+        subset_columns_datapostcodes = subset_price_datapostcodes[
+            [
+                "Mean_income_taxunit",
+                "Subtype of property",
+                "State of the building",
+                "Surface area of the plot of land",
+                "Number of rooms",
+                "Living Area",
+                "Number of facades",
+            ]
+        ]
+        self.data_y = subset_price_datapostcodes["Price"]
         self.data = subset_columns_datapostcodes
 
         # Set lists for selectors
 
-        self.property_type = list(data_postcodes['Subtype of property'].unique())
-        self.building_state = list(data_postcodes['State of the building'].unique())
-        self.num_facades = list(data_postcodes['Number of facades'].sort_values().unique().astype('int32'))
-        self.num_rooms = list(range(data_postcodes['Number of rooms'].max() + 1))
+        self.property_type = list(data_postcodes["Subtype of property"].unique())
+        self.building_state = list(data_postcodes["State of the building"].unique())
+        self.num_facades = list(
+            data_postcodes["Number of facades"].sort_values().unique().astype("int32")
+        )
+        self.num_rooms = list(range(data_postcodes["Number of rooms"].max() + 1))
 
-    def preprocess(self, new_data:dict) -> np.ndarray:
+    def preprocess(self, new_data: dict) -> np.ndarray:
         """
         Prepare an np.ndarray of Gower distances to training dataset used in the model
         """
@@ -179,25 +191,36 @@ class Preprocessor:
 
         # obtain the tax information for given postal code ; drop postal code
 
-        self.new_data['PostalCodes'] = self.new_data['PostalCodes'].astype('str')
-        self.new_data['Mean_income_taxunit'] = self.taxdata[self.taxdata['PostalCodes'] == self.new_data['PostalCodes'][0]]['Mean_income_taxunit'].values
-        self.new_data.drop(columns= ['PostalCodes'], inplace= True)
+        self.new_data["PostalCodes"] = self.new_data["PostalCodes"].astype("str")
+        self.new_data["Mean_income_taxunit"] = self.taxdata[
+            self.taxdata["PostalCodes"] == self.new_data["PostalCodes"][0]
+        ]["Mean_income_taxunit"].values
+        self.new_data.drop(columns=["PostalCodes"], inplace=True)
 
         # Ensure datatypes
 
-        self.new_data['Subtype of property'] = self.new_data['Subtype of property'].astype('str')
-        self.new_data['State of the building'] = self.new_data['State of the building'].astype('str')
-        self.new_data['Number of facades'] = self.new_data['Number of facades'].astype('int64')
-        self.new_data['Number of rooms'] = self.new_data['Number of rooms'].astype('int64')
-        self.new_data['Surface area of the plot of land'] = self.new_data['Surface area of the plot of land'].astype('float')
-        self.new_data['Living Area'] = self.new_data['Living Area'].astype('float')
+        self.new_data["Subtype of property"] = self.new_data[
+            "Subtype of property"
+        ].astype("str")
+        self.new_data["State of the building"] = self.new_data[
+            "State of the building"
+        ].astype("str")
+        self.new_data["Number of facades"] = self.new_data["Number of facades"].astype(
+            "int64"
+        )
+        self.new_data["Number of rooms"] = self.new_data["Number of rooms"].astype(
+            "int64"
+        )
+        self.new_data["Surface area of the plot of land"] = self.new_data[
+            "Surface area of the plot of land"
+        ].astype("float")
+        self.new_data["Living Area"] = self.new_data["Living Area"].astype("float")
 
         # Call function to calc Gower distance
 
         gower_dist = self.gower_calc()
         self.distance = gower_dist
         return gower_dist
-
 
     def gower_calc(self) -> np.ndarray:
         """
@@ -208,17 +231,20 @@ class Preprocessor:
 
         # Load array of indices and select rows of training data from original dataset
 
-        self.training_indices = pickle.load(open('./preprocessing/training_indices.pkl', 'rb'))
+        self.training_indices = pickle.load(
+            open("./preprocessing/training_indices.pkl", "rb")
+        )
         selected_rows = self.data.iloc[self.training_indices]
         self.y_train = self.data_y.iloc[self.training_indices]
 
         # Add row of new data to dataframe
 
-        data_to_dist = pd.concat([selected_rows, self.new_data], ignore_index=True).values
+        data_to_dist = pd.concat(
+            [selected_rows, self.new_data], ignore_index=True
+        ).values
 
         # Calculate Gower distance and retrieve distances for the new datapoint
 
         gower_mat = gower_matrix(data_to_dist)
         self.X_distance = gower_mat[:-1, :-1]
         return gower_mat[-1, :-1].reshape(1, -1)
-
