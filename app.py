@@ -1,9 +1,6 @@
 # Imports
 
 import streamlit as st
-import pandas as pd
-import numpy as np
-import pickle
 
 from preprocessing.cleaning_data import Preprocessor
 from predict.prediction import Predictor
@@ -14,6 +11,7 @@ preprocessing = Preprocessor()
 preprocessing.load_data()
 
 st.title("Property price prediction using KNN regression")
+st.warning(f"Please only use this tool to predict property prices ranging from 200,000 € to 600,000 €")
 
 postal_code = st.sidebar.selectbox("Postal code of property location", preprocessing.postalcodes, index= None)
 property_type = st.sidebar.selectbox('Select property type', preprocessing.property_type, index= None)
@@ -42,47 +40,3 @@ if st.button('Predict price'):
                                                             new_data_dist= preprocessing.distance)
     st.success(f"The predicted property price is {predicted_price}€")
     st.warning(f"The 95% Confidence Interval for this price estimation is: ({CI_lower} - {CI_upper})")
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-#st.write("Hello ,let's learn how to build a streamlit app together")
-
-#st.title("This is the app title")
-#st.header("This is the header")
-#st.markdown("This is the markdown")
-#st.subheader("This is the subheader")
-#st.caption("This is the caption")
-#st.code("x = 2021")
-#st.latex(r''' a+a r^1+a r^2+a r^3 ''')
-
-#st.image("kid.jpg", caption="A kid playing")
-
-#st.checkbox('Yes')
-#st.button('Click Me')
-#st.radio('Pick your gender', ['Male', 'Female'])
-#st.selectbox('Pick a fruit', ['Apple', 'Banana', 'Orange'])
-#st.multiselect('Choose a planet', ['Jupiter', 'Mars', 'Neptune'])
-#st.select_slider('Pick a mark', ['Bad', 'Good', 'Excellent'])
-#st.slider('Pick a number', 0, 50)
-
-#with st.spinner('Wait for it...'):    
-#    time.sleep(10)
-
-#st.success("You did it!")
-#st.error("Error occurred")
-#st.warning("This is a warning")
-#st.info("It's easy to build a Streamlit app")
-#st.exception(RuntimeError("RuntimeError exception"))
-
-#st.sidebar.title("Sidebar Title")

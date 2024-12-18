@@ -1,0 +1,2 @@
+This directory should contain a .pkl file containing the prescribed model.
+Due to size constraints on GitHub, the .pkl was omitted.
