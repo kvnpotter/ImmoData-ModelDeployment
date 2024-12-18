@@ -102,3 +102,8 @@ streamlit run app.py
 # Contributors 
 This project was completed by:
 1. [Kevin](https://github.com/kvnpotter)
+
+# **Timeline**
+
+Start project: 11/12/2024 09:30
+End project: 18/12/2024 12:30
